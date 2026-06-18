@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Operator's Playbook — Meta Ads (Beginner)</title>
+<meta name="description" content="A read-and-do playbook that takes you from zero to a live, properly-structured Meta Ads campaign on your own account. No fluff, no goldmine promises. ₹999." />
+
+<!-- Open Graph / social preview. TODO: replace URL + image once domain is live. -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Operator's Playbook — Meta Ads (Beginner)" />
+<meta property="og:description" content="Learn Meta Ads by actually running them — not by watching someone else. A read-and-do playbook. ₹999." />
+<!-- <meta property="og:url" content="https://YOURDOMAIN" /> -->
+<!-- <meta property="og:image" content="https://YOURDOMAIN/og-image.png" /> -->
+<meta name="twitter:card" content="summary_large_image" />
+
+<!-- Inline SVG favicon (amber tile + serif M). Replace with a real brand mark anytime. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23E8893A'/%3E%3Ctext x='16' y='23' font-family='Georgia,serif' font-size='21' font-weight='700' text-anchor='middle' fill='%23121210'%3EO%3C/text%3E%3C/svg%3E" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    --ink: #ECEAE3;          /* primary text (warm off-white) */
+    --ink-soft: #C9C6BD;     /* body text slightly softer */
+    --paper: #121210;        /* page background (warm near-black) */
+    --surface: #1B1A16;      /* cards / raised areas */
+    --surface-2: #211F1A;    /* offer card */
+    --muted: #8E8A7F;        /* secondary text */
+    --border: #2C2A24;       /* hairlines */
+    --accent: #E8893A;       /* amber, brightened for dark contrast */
+    --accent-deep: #C2620E;
+    --accent-soft: rgba(232,137,58,0.10);
+    --measure: 680px;
+
+    --serif: "Newsreader", Georgia, "Times New Roman", serif;
+    --sans: "Inter", system-ui, -apple-system, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.65;
+    font-size: 17px;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    /* subtle warm glow behind the hero, fades into the page */
+    background-image: radial-gradient(120% 60% at 50% -8%, rgba(232,137,58,0.10) 0%, rgba(232,137,58,0.03) 28%, transparent 60%);
+    background-repeat: no-repeat;
+    background-attachment: scroll;
+  }
+
+  .wrap { max-width: var(--measure); margin: 0 auto; padding: 0 22px; }
+
+  /* ---------- Typography ---------- */
+  h1, h2, h3 { font-family: var(--serif); font-weight: 600; line-height: 1.12; letter-spacing: -0.01em; color: var(--ink); }
+  h1 { font-size: clamp(2.1rem, 6vw, 3.1rem); }
+  h2 { font-size: clamp(1.6rem, 4.5vw, 2.1rem); }
+  h3 { font-size: 1.18rem; font-weight: 600; }
+
+  p { margin-bottom: 1.1em; color: var(--ink-soft); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+  strong { font-weight: 600; color: var(--ink); }
+  em { color: var(--ink); }
+  .tnum { font-variant-numeric: tabular-nums; }
+
+  /* ---------- Section scaffolding ---------- */
+  section { padding: 56px 0; border-top: 1px solid var(--border); }
+  section:first-of-type { border-top: none; }
+
+  .label {
+    font-family: var(--sans);
+    font-size: 0.72rem; font-weight: 600; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 18px; display: block;
+  }
+  .label .num { color: var(--muted); margin-right: 10px; }
+
+  .muted { color: var(--muted); }
+
+  /* ---------- Hero ---------- */
+  .hero { padding: 64px 0 52px; border-top: none; text-align: left; }
+  .hero .eyebrow {
+    font-size: 0.74rem; font-weight: 600; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 22px;
+  }
+  .hero h1 { margin-bottom: 22px; }
+  .hero .sub { font-size: 1.18rem; color: var(--ink-soft); max-width: 32em; margin-bottom: 30px; }
+  .hero .trustline { font-size: 0.9rem; color: var(--muted); margin-top: 20px; }
+
+  /* ---------- Buttons (amber primary in dark) ---------- */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    background: var(--accent); color: #1a1206;
+    font-family: var(--sans); font-size: 1rem; font-weight: 600;
+    padding: 15px 26px; border-radius: 8px; border: 1px solid var(--accent);
+    cursor: pointer; transition: transform .15s ease, background .15s ease, box-shadow .15s ease;
+    min-height: 48px; text-decoration: none;
+  }
+  .btn:hover { background: #F29A4D; text-decoration: none; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(232,137,58,0.28); }
+  .btn:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+
+  .btn-row { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+  .link-arrow { font-weight: 500; font-size: 0.98rem; }
+
+  /* ---------- Lists ---------- */
+  ul.clean { list-style: none; }
+  ul.clean li { position: relative; padding-left: 26px; margin-bottom: 16px; color: var(--ink-soft); }
+  ul.clean li::before {
+    content: ""; position: absolute; left: 4px; top: 11px;
+    width: 6px; height: 6px; background: var(--accent); border-radius: 50%;
+  }
+
+  /* "Not for you" — amber-tinted surface */
+  .notfor { background: var(--accent-soft); border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0; padding: 24px 26px 8px; }
+
+  /* Chapters list */
+  ol.chapters { list-style: none; counter-reset: ch 0; }
+  ol.chapters li {
+    display: grid; grid-template-columns: 34px 1fr; gap: 4px 14px;
+    padding: 14px 0; border-bottom: 1px solid var(--border); align-items: baseline;
+  }
+  ol.chapters li:last-child { border-bottom: none; }
+  ol.chapters li::before {
+    counter-increment: ch; content: counter(ch, decimal-leading-zero);
+    font-family: var(--sans); font-size: 0.78rem; font-weight: 600;
+    color: var(--accent); letter-spacing: 0.03em; white-space: nowrap;
+  }
+  ol.chapters li .ch-body { grid-column: 2; color: var(--ink-soft); }
+  ol.chapters li strong { font-weight: 600; }
+  .templates-note { margin-top: 22px; font-size: 0.98rem; }
+
+  /* ---------- Proof / stat ---------- */
+  .stat {
+    font-family: var(--serif); font-size: clamp(1.5rem, 5vw, 2.05rem);
+    line-height: 1.25; font-weight: 500; margin: 26px 0; color: var(--ink);
+  }
+  .stat .big { color: var(--accent); font-weight: 600; }
+
+  /* ---------- Offer card ---------- */
+  .offer-card {
+    border: 1px solid var(--border); border-radius: 14px;
+    padding: 32px 28px; background: var(--surface-2);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.03) inset, 0 24px 60px -30px rgba(232,137,58,0.30);
+  }
+  .alts { font-size: 0.96rem; color: var(--muted); margin-bottom: 22px; }
+  .alts div { padding: 5px 0; border-bottom: 1px dashed var(--border); display: flex; justify-content: space-between; gap: 16px; }
+  .alts div:last-child { border-bottom: none; }
+  .alts .amt { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  .price-row { display: flex; align-items: baseline; gap: 14px; margin: 6px 0 4px; }
+  .price-old { font-size: 1.3rem; color: var(--muted); text-decoration: line-through; font-variant-numeric: tabular-nums; }
+  .price-now { font-family: var(--serif); font-size: 3rem; font-weight: 600; color: var(--accent); font-variant-numeric: tabular-nums; line-height: 1; }
+  .price-label { font-size: 0.82rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 18px; }
+
+  .offer-line { font-size: 0.96rem; color: var(--ink-soft); font-style: italic; margin: 18px 0 22px; }
+  .offer-card .btn { width: 100%; }
+  .offer-micro { font-size: 0.86rem; color: var(--muted); text-align: center; margin-top: 14px; }
+  .deadline {
+    display: inline-block; margin-top: 18px; font-size: 0.84rem; font-weight: 600;
+    color: var(--accent); background: var(--accent-soft); padding: 7px 13px; border-radius: 6px;
+  }
+
+  /* ---------- FAQ ---------- */
+  details { border-bottom: 1px solid var(--border); padding: 4px 0; }
+  details summary {
+    cursor: pointer; list-style: none; padding: 16px 30px 16px 0; position: relative;
+    font-weight: 600; font-size: 1.04rem; font-family: var(--sans); color: var(--ink);
+  }
+  details summary::-webkit-details-marker { display: none; }
+  details summary::after {
+    content: "+"; position: absolute; right: 2px; top: 14px;
+    font-size: 1.4rem; color: var(--accent); font-weight: 400; transition: transform .2s ease;
+  }
+  details[open] summary::after { content: "–"; }
+  details .answer { padding: 0 0 18px; color: var(--ink-soft); }
+
+  /* ---------- Final CTA ---------- */
+  .final { text-align: center; }
+  .final h2 { margin-bottom: 16px; }
+  .final p { max-width: 30em; margin: 0 auto 28px; color: var(--ink-soft); }
+  .final .btn-row { justify-content: center; }
+
+  /* ---------- Footer ---------- */
+  footer { border-top: 1px solid var(--border); padding: 34px 0 40px; font-size: 0.86rem; color: var(--muted); }
+  footer a { color: var(--muted); text-decoration: underline; text-underline-offset: 2px; }
+
+  /* ---------- Sticky mobile CTA ---------- */
+  .sticky-cta {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+    background: rgba(18,18,16,.92); backdrop-filter: blur(8px);
+    border-top: 1px solid var(--border); padding: 12px 16px; display: none;
+    transform: translateY(115%); transition: transform .2s ease;
+  }
+  .sticky-cta.visible { transform: translateY(0); }
+  .sticky-cta .btn { width: 100%; }
+
+  @media (max-width: 768px) {
+    .sticky-cta { display: block; }
+    body { padding-bottom: 78px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Operator's Playbook · Meta Ads (Beginner)</div>
+    <h1>Learn Meta Ads by actually running them — not by watching someone else.</h1>
+    <p class="sub">A read-and-do playbook that takes you from zero to a live, properly-structured campaign on your own ad account. No fluff, no goldmine promises, no 6-hour videos you'll forget by Tuesday.</p>
+    <div class="btn-row">
+      <!-- TODO: replace href with your Razorpay payment link before launch -->
+      <a class="btn" href="#offer">Get the playbook — ₹999</a>
+      <!-- TODO: replace href with your free Chapter 1 link (Notion / email-capture) -->
+      <a class="link-arrow" href="#free">Or read Chapter 1 free →</a>
+    </div>
+    <p class="trustline">A read-and-do playbook · 11 chapters · delivered to your inbox</p>
+  </div>
+</header>
+
+<!-- ============ 01 PROBLEM ============ -->
+<section>
+  <div class="wrap">
+    <span class="label"><span class="num tnum">01</span>The problem</span>
+    <h2>Most Meta Ads courses are built to be watched. That's the problem.</h2>
+    <p>You watch a 6-hour video course. You nod along. It makes sense in the moment. Then you open Ads Manager three days later and realize you remember almost none of it.</p>
+    <p>That's not your fault. It's how watching works. You retain what you <em>read and act on</em> — not what you passively watch. Every serious learning study says the same thing, and every video course ignores it because video is easier to sell.</p>
+    <p>This playbook is built the opposite way. You read a focused chapter, then you do the thing — inside your own ad account, on real settings, with a real (small) budget. By the end you haven't watched someone else run Meta Ads. You've run them yourself.</p>
+  </div>
+</section>
+
+<!-- ============ 02 DIFFERENT ============ -->
+<section>
+  <div class="wrap">
+    <span class="label"><span class="num tnum">02</span>What makes it different</span>
+    <h2>A playbook, not a content dump.</h2>
+    <ul class="clean">
+      <li><strong>Notion-native.</strong> You get a master Notion document you duplicate into your own workspace. Read it, mark tasks done, add your own notes in the margins. It's a working tool, not a video library.</li>
+      <li><strong>Built to be acted on.</strong> Every chapter ends with a concrete task — set up your pixel, launch a campaign, audit your landing page. Not "reflect on your goals." Actual operator moves.</li>
+      <li><strong>Real numbers from real spend.</strong> The examples come from accounts running anywhere from ₹30K to ₹30–40 lakh a month. Not made-up ranges. Not theory.</li>
+      <li><strong>Updated as Meta changes.</strong> Meta's UI shifts every quarter. When it does, the playbook updates — and you get the updates. A video course goes stale the day Meta renames a button.</li>
+      <li><strong>Honest about what doesn't matter.</strong> Half of what beginners stress about is noise. This tells you what to skip, not just what to do.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ 03 WHO FOR ============ -->
+<section>
+  <div class="wrap">
+    <span class="label"><span class="num tnum">03</span>Who it's for</span>
+    <h2>This is for you if…</h2>
+    <ul class="clean">
+      <li>You're a <strong>junior performance marketer</strong> who wants to actually understand the system, not just execute tickets.</li>
+      <li>You're a <strong>freelancer</strong> who needs to run client ads competently without faking it.</li>
+      <li>You're a <strong>small DTC founder</strong> running your own ads and tired of guessing.</li>
+      <li><strong>You pay an agency and have no idea if they're being honest with you.</strong> After this, you'll be able to open your own account and read it critically. That alone is worth more than what this costs.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ 04 NOT FOR ============ -->
+<section>
+  <div class="wrap">
+    <span class="label"><span class="num tnum">04</span>Who it's not for</span>
+    <h2>Skip this if…</h2>
+    <div class="notfor">
+      <ul class="clean">
+        <li>You're a senior media buyer managing 7-figure budgets. You already know this.</li>
+        <li>You want a magic button or a "secret" that prints money. There isn't one, and this playbook tells you so on page one.</li>
+        <li>You want to watch, not work. This playbook is useless if you don't do the tasks inside your own account.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 05 INSIDE ============ -->
+<section>
+  <div class="wrap">
+    <span class="label"><span class="num tnum">05</span>What's inside</span>
+    <h2>11 chapters. Zero filler.</h2>
+    <ol class="chapters">
+      <li><span class="ch-body"><strong>Start here.</strong> Why this exists, and how to actually use a read-and-do playbook.</span></li>
+      <li><span class="ch-body"><strong>How Meta actually works.</strong> The mental model that holds up at any budget.</span></li>
+      <li><span class="ch-body"><strong>Full setup.</strong> Business Manager, ad account, pixel, CAPI — with screen-recorded walkthroughs.</span></li>
+      <li><span class="ch-body"><strong>Campaign → ad set → ad.</strong> The structure, and the expensive mistakes beginners make in it.</span></li>
+      <li><span class="ch-body"><strong>Creatives that earn attention.</strong> Briefs, hooks, and the AI tools that make production cheap.</span></li>
+      <li><span class="ch-body"><strong>Launching your first campaign.</strong> Budget you <em>calculate</em>, not guess. Full walkthrough video.</span></li>
+      <li><span class="ch-body"><strong>Reading the numbers without getting fooled.</strong> Which metrics matter, which are traps.</span></li>
+      <li><span class="ch-body"><strong>Surviving the first 14 days.</strong> When to wait, when to act, when to panic (almost never).</span></li>
+      <li><span class="ch-body"><strong>Audiences.</strong> Custom, Lookalike, and Retargeting that actually compound.</span></li>
+      <li><span class="ch-body"><strong>When delivery breaks.</strong> The diagnosis reference you'll come back to.</span></li>
+      <li><span class="ch-body"><strong>Where to go next.</strong> What you've earned, and what's deliberately not in this tier.</span></li>
+    </ol>
+    <p class="templates-note muted">Plus: copy-paste templates — creative briefs, naming conventions, pre-launch checklists — you'll use on every campaign you ever run.</p>
+  </div>
+</section>
+
+<!-- ============ 06 PROOF ============ -->
+<section id="free">
+  <div class="wrap">
+    <span class="label"><span class="num tnum">06</span>Why trust this one</span>
+    <h2>I'm an operator, not a course-seller.</h2>
+    <!-- TODO (Mayank): personalize this in your own voice -->
+    <p>I've run Meta Ads across accounts spending from ₹30K to ₹30–40 lakh a month — through the iOS 14 break, the CAPI shift, the Andromeda era. This playbook is the thing I wish someone had handed me when I started, written in plain language with the parts nobody tells you.</p>
+    <p class="stat">The mistakes this playbook prevents cost me <span class="big tnum">₹35 lakh+</span> to learn — across real ad accounts, over real years. You're getting the lessons for ₹999.</p>
+    <p><strong>Don't take my word for it — read Chapter 1 free.</strong> If the free chapter doesn't teach you something useful in 15 minutes, don't buy the rest.</p>
+    <div class="btn-row">
+      <!-- TODO: replace href with your free Chapter 1 link -->
+      <a class="link-arrow" href="#free">Read Chapter 1 free →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 07 OFFER ============ -->
+<section id="offer">
+  <div class="wrap">
+    <span class="label"><span class="num tnum">07</span>The offer</span>
+    <h2>One price. Everything. Yours to keep.</h2>
+    <div class="offer-card">
+      <div class="alts">
+        <div><span>A typical video Meta Ads course</span><span class="amt">₹5,000–15,000</span></div>
+        <div><span>One agency's setup fee alone</span><span class="amt">₹10,000–25,000</span></div>
+        <div><span>This playbook</span><span class="amt"><strong>₹999</strong></span></div>
+      </div>
+      <div class="price-row">
+        <span class="price-old">₹1,699</span>
+        <span class="price-now">₹999</span>
+      </div>
+      <div class="price-label">Launch price</div>
+      <p style="margin-bottom:18px;">The complete Beginner playbook — all 11 chapters, all templates, all walkthrough videos, all future updates. No subscription. No upsell wall hiding the "real" content. No locked chapters.</p>
+      <p class="offer-line">Less than one badly-set-up campaign will waste in its first week.</p>
+      <!-- TODO: replace href with your Razorpay payment link before launch -->
+      <a class="btn" href="#">Get the playbook — ₹999</a>
+      <p class="offer-micro">Instant delivery to your email · Duplicate into your own Notion in one click</p>
+      <!-- TODO: set the real deadline date at launch (30 days after go-live) -->
+      <div class="deadline">Launch price ends [SET DATE AT LAUNCH] — then ₹1,699</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 08 FAQ ============ -->
+<section>
+  <div class="wrap">
+    <span class="label"><span class="num tnum">08</span>Questions</span>
+    <h2>Straight answers.</h2>
+    <details>
+      <summary>Do I need any experience?</summary>
+      <div class="answer">No. It starts from zero — creating your Business Manager — and assumes you've never run an ad. If you already run ads competently, the Intermediate tier (later) is more your speed.</div>
+    </details>
+    <details>
+      <summary>How is it delivered?</summary>
+      <div class="answer">The moment you pay, you get an email with a Notion link. Click "Duplicate," and the whole playbook is in your own workspace to keep, edit, and mark up.</div>
+    </details>
+    <details>
+      <summary>Will it go out of date?</summary>
+      <div class="answer">Meta changes constantly. When the platform shifts in a way that matters, the playbook updates — and you get the updated version. That's the advantage of a living document over a fixed video.</div>
+    </details>
+    <details>
+      <summary>Do I need a budget to run ads to use this?</summary>
+      <div class="answer">You'll get the most out of it with even ₹300–500/day to run a test campaign alongside. But you can read and set everything up first, then launch when you're ready.</div>
+    </details>
+    <details>
+      <summary>What's the refund policy?</summary>
+      <div class="answer">No refunds — and here's why that's fair: Chapter 1 is free. Read it before you buy. If the free chapter doesn't convince you the rest is worth ₹999, don't buy it. Once you have the full playbook, it's yours to keep and duplicate, so a refund would mean handing back something you still have. The free chapter is your risk-free test drive.</div>
+    </details>
+    <details>
+      <summary>Is this for India only?</summary>
+      <div class="answer">The examples use Indian context (INR, UPI, Indian platforms), but the principles work anywhere. If you run Shopify DTC, you're covered.</div>
+    </details>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="final">
+  <div class="wrap">
+    <h2>Stop watching. Start running.</h2>
+    <p>You can keep collecting free tips and feeling like you almost understand Meta Ads. Or you can read one focused playbook, do the work inside your own account, and actually know how this works by the end.</p>
+    <div class="btn-row">
+      <!-- TODO: replace href with your Razorpay payment link -->
+      <a class="btn" href="#offer">Get the playbook — ₹999</a>
+      <!-- TODO: replace href with your free Chapter 1 link -->
+      <a class="link-arrow" href="#free">Still unsure? Read Chapter 1 free →</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div style="margin-bottom:14px">
+      <a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a> · <a href="refund.html">Refunds</a> · <a href="contact.html">Contact</a>
+    </div>
+    Operator's Playbook · a sole proprietorship owned and operated by its sole proprietor<br />
+    <span class="muted">Not affiliated with or endorsed by Meta Platforms, Inc.</span>
+  </div>
+</footer>
+
+<!-- Sticky mobile CTA -->
+<div class="sticky-cta">
+  <!-- TODO: replace href with your Razorpay payment link -->
+  <a class="btn" href="#offer">Get the playbook — ₹999</a>
+</div>
+
+<script>
+  /* Reveal the sticky mobile CTA only after the hero scrolls out of view,
+     so it doesn't duplicate the in-hero button at the top of the page. */
+  (function () {
+    var bar = document.querySelector('.sticky-cta');
+    var hero = document.querySelector('.hero');
+    if (!bar || !hero) return;
+    function onScroll() {
+      var threshold = hero.offsetHeight - 80;
+      if (window.scrollY > threshold) bar.classList.add('visible');
+      else bar.classList.remove('visible');
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    onScroll();
+  })();
+</script>
+
+</body>
+</html>
