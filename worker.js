@@ -51,7 +51,19 @@ async function createOrder(env) {
       }),
     });
 
-    if (res.status === 401) return json({ error: "Razorpay authentication failed." }, 401, headers);
+    if (res.status === 401) {
+      // TEMP diagnostic: key_id is public; we expose only the secret's LENGTH, never its value.
+      return json(
+        {
+          error: "Razorpay authentication failed.",
+          key_id_used: KEY_ID,
+          key_id_length: KEY_ID.length,
+          secret_length: KEY_SECRET.length,
+        },
+        401,
+        headers
+      );
+    }
     if (!res.ok) {
       const detail = await res.text();
       return json({ error: "Razorpay order creation failed.", detail }, 500, headers);
