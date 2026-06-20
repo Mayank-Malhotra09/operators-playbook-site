@@ -342,8 +342,8 @@
       <div class="price-label">Launch price</div>
       <p style="margin-bottom:18px;">The complete Beginner playbook — all 11 chapters, all templates, all walkthrough videos, all future updates. No subscription. No upsell wall hiding the "real" content. No locked chapters.</p>
       <p class="offer-line">Less than one badly-set-up campaign will waste in its first week.</p>
-      <!-- TODO: replace href with your Razorpay payment link before launch -->
-      <a class="btn" href="#">Get the playbook — ₹999</a>
+      <!-- Razorpay Standard Checkout — wired via checkout.js (data-buy hook) -->
+      <a class="btn" href="#" data-buy>Get the playbook — ₹999</a>
       <p class="offer-micro">Instant delivery to your email · Duplicate into your own Notion in one click</p>
       <!-- TODO: set the real deadline date at launch (30 days after go-live) -->
       <div class="deadline">Launch price ends [SET DATE AT LAUNCH] — then ₹1,699</div>
@@ -430,6 +430,10 @@
     onScroll();
   })();
 </script>
+
+<!-- Razorpay Standard Checkout -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="/checkout.js" defer></script>
 
 </body>
 </html>

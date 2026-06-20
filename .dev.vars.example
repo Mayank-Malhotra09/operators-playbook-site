@@ -1,0 +1,6 @@
+# Copy this file to ".dev.vars" for LOCAL testing with `npx wrangler pages dev`.
+# .dev.vars is gitignored. In production these are set in the Cloudflare dashboard
+# (Pages project → Settings → Environment variables), NOT in any committed file.
+
+RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxxxxx
+RAZORPAY_KEY_SECRET=your_test_secret_here

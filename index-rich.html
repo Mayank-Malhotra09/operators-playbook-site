@@ -672,8 +672,8 @@ footer a:hover{color:var(--ink)}
           <li><span class="mark">✓</span>Master updates when Meta ships UI changes</li>
         </ul>
         <p class="micro">Less than one badly-set-up campaign wastes in week one.</p>
-        <!-- TODO: replace href with your Razorpay payment link -->
-        <a class="btn primary" href="#">Get the playbook</a>
+        <!-- Razorpay Standard Checkout — wired via checkout.js (data-buy hook) -->
+        <a class="btn primary" href="#" data-buy>Get the playbook</a>
         <!-- TODO: set the real date at launch (30 days after go-live) -->
         <div class="deadline-chip">Launch price ends [SET DATE AT LAUNCH] — then ₹1,699</div>
       </div>
@@ -832,5 +832,9 @@ footer a:hover{color:var(--ink)}
   document.querySelectorAll('.rv').forEach(el=>io.observe(el));
 })();
 </script>
+
+<!-- Razorpay Standard Checkout -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="/checkout.js" defer></script>
 </body>
 </html>
