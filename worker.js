@@ -19,6 +19,9 @@ export default {
     if (url.pathname === "/api/razorpay-webhook" && request.method === "POST") {
       return handleWebhook(request, env);
     }
+    if (url.pathname === "/api/lead" && request.method === "POST") {
+      return handleLead(request, env);
+    }
 
     // Everything else: serve the static site.
     return env.ASSETS.fetch(request);
@@ -209,6 +212,47 @@ async function brevoSendDeliveryEmail(env, email, name) {
     const t = await r.text();
     throw new Error("Brevo email error: " + t);
   }
+}
+
+// ---------- POST /api/lead ----------
+// Free Chapter 1 opt-in. Adds the email to the Brevo "Leads" list (env.BREVO_LEADS_LIST_ID),
+// which triggers the nurture automation in Brevo. The frontend then opens Chapter 1 immediately.
+async function handleLead(request, env) {
+  const headers = { "Content-Type": "application/json" };
+  if (!env.BREVO_API) return json({ error: "Email service not configured." }, 500, headers);
+
+  let data;
+  try {
+    data = await request.json();
+  } catch {
+    return json({ error: "Invalid request." }, 400, headers);
+  }
+
+  const email = ((data && data.email) || "").trim();
+  const name = ((data && data.name) || "").trim();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    return json({ error: "Please enter a valid email." }, 400, headers);
+  }
+
+  try {
+    const payload = { email, updateEnabled: true };
+    if (name) payload.attributes = { FIRSTNAME: name };
+    if (env.BREVO_LEADS_LIST_ID) payload.listIds = [parseInt(env.BREVO_LEADS_LIST_ID, 10)];
+
+    const r = await fetch("https://api.brevo.com/v3/contacts", {
+      method: "POST",
+      headers: { "api-key": env.BREVO_API, "Content-Type": "application/json", accept: "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!r.ok && r.status !== 204) {
+      const t = await r.text();
+      if (!t.includes("duplicate_parameter")) return json({ error: "Could not sign you up. Please try again." }, 500, headers);
+    }
+  } catch (e) {
+    return json({ error: "Could not sign you up. Please try again." }, 500, headers);
+  }
+
+  return json({ ok: true }, 200, headers);
 }
 
 // ---------- helpers ----------
