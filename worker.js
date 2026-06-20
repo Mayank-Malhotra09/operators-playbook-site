@@ -38,6 +38,10 @@ async function createOrder(env) {
     return json({ error: "Invalid price configuration." }, 500, headers);
   }
 
+  // TEMP diagnostic: short hash fingerprint of the secret (never the secret itself),
+  // to detect whether different requests are seeing different secret values across the edge.
+  const kfp = (await hmacSha256Hex(KEY_SECRET, "fp")).slice(0, 8);
+
   try {
     const auth = btoa(`${KEY_ID}:${KEY_SECRET}`);
     const res = await fetch("https://api.razorpay.com/v1/orders", {
@@ -51,7 +55,7 @@ async function createOrder(env) {
       }),
     });
 
-    if (res.status === 401) return json({ error: "Razorpay authentication failed." }, 401, headers);
+    if (res.status === 401) return json({ error: "Razorpay authentication failed.", kfp, key_id: KEY_ID }, 401, headers);
     if (!res.ok) {
       const detail = await res.text();
       return json({ error: "Razorpay order creation failed.", detail }, 500, headers);
@@ -61,7 +65,7 @@ async function createOrder(env) {
     // key_id is public and required by the frontend — returning it here means the
     // live/test key is never hardcoded in HTML and swaps automatically with the env var.
     return json(
-      { order_id: order.id, amount: order.amount, currency: order.currency, key_id: KEY_ID },
+      { order_id: order.id, amount: order.amount, currency: order.currency, key_id: KEY_ID, kfp },
       200,
       headers
     );
