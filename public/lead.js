@@ -3,9 +3,9 @@
 // then opens Chapter 1 immediately. No sensitive values here.
 
 (function () {
-  // Public Chapter 1 link. MUST be shared-to-web in Notion so logged-out leads can open it.
+  // Public Chapter 1 link (published to web — opens for logged-out leads).
   var CH1_URL =
-    "https://app.notion.com/p/Chapter-1-How-Meta-actually-works-37f76a31b37a80429ed0df5ba812f443";
+    "https://sparkling-plier-61a.notion.site/Chapter-1-How-Meta-actually-works-37f76a31b37a80429ed0df5ba812f443";
 
   var modal;
 
