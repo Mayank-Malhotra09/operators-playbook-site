@@ -1,4 +1,4 @@
-# Copy this file to ".dev.vars" for LOCAL testing with `npx wrangler pages dev`.
+# Copy this file to ".dev.vars" for LOCAL testing with `npx wrangler dev`.
 # .dev.vars is gitignored. In production these are set in the Cloudflare dashboard
 # (Pages project → Settings → Environment variables), NOT in any committed file.
 

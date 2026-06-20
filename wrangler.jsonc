@@ -1,0 +1,12 @@
+{
+  // IMPORTANT: "name" must match your existing Worker's name in the Cloudflare dashboard,
+  // otherwise `wrangler deploy` creates a NEW worker (and your domain stays on the old one).
+  // Confirm under the project → Settings. Change this string if your worker is named differently.
+  "name": "operators-playbook-site",
+  "main": "worker.js",
+  "compatibility_date": "2024-11-06",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  }
+}
