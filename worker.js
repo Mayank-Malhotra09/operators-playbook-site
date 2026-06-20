@@ -16,6 +16,9 @@ export default {
     if (url.pathname === "/api/verify-payment" && request.method === "POST") {
       return verifyPayment(request, env);
     }
+    if (url.pathname === "/api/razorpay-webhook" && request.method === "POST") {
+      return handleWebhook(request, env);
+    }
 
     // Everything else: serve the static site.
     return env.ASSETS.fetch(request);
@@ -93,6 +96,119 @@ async function verifyPayment(request, env) {
 
   // Verified. NEXT PHASE: trigger Notion delivery email + add buyer to Brevo here (or via webhook).
   return json({ verified: true, payment_id: razorpay_payment_id }, 200, headers);
+}
+
+// ---------- POST /api/razorpay-webhook ----------
+// Razorpay calls this server-to-server on payment events. This is the AUTHORITATIVE
+// trigger for delivery (fires even if the buyer closes the tab). It:
+//   1. verifies the webhook signature (HMAC-SHA256 of the raw body w/ the webhook secret)
+//   2. on payment.captured, adds the buyer to Brevo + sends the delivery email.
+async function handleWebhook(request, env) {
+  const WEBHOOK_SECRET = env.RAZORPAY_WEBHOOK_SECRET;
+  if (!WEBHOOK_SECRET) return new Response("Webhook secret not configured", { status: 500 });
+
+  const raw = await request.text(); // must verify against the RAW body
+  const headerSig = request.headers.get("x-razorpay-signature") || "";
+  const expected = await hmacSha256Hex(WEBHOOK_SECRET, raw);
+  if (!timingSafeEqual(expected, headerSig)) {
+    return new Response("Invalid signature", { status: 400 });
+  }
+
+  let body;
+  try {
+    body = JSON.parse(raw);
+  } catch {
+    return new Response("Bad JSON", { status: 400 });
+  }
+
+  // Only fulfil on a successful payment.
+  if (body.event !== "payment.captured" && body.event !== "order.paid") {
+    return new Response("Ignored event", { status: 200 });
+  }
+
+  const payment = body && body.payload && body.payload.payment && body.payload.payment.entity;
+  if (!payment || !payment.email) {
+    return new Response("No payment email; nothing to deliver", { status: 200 });
+  }
+
+  const email = payment.email;
+  const paymentId = payment.id;
+  const name = (payment.notes && payment.notes.name) || "";
+
+  // Idempotency (optional): if a KV namespace named PROCESSED is bound, skip duplicates.
+  if (env.PROCESSED) {
+    if (await env.PROCESSED.get(paymentId)) return new Response("Already processed", { status: 200 });
+  }
+
+  try {
+    await brevoUpsertContact(env, email, name);
+    await brevoSendDeliveryEmail(env, email, name);
+  } catch (e) {
+    // Non-2xx makes Razorpay retry the webhook, so a transient failure self-heals.
+    return new Response("Delivery failed: " + String(e), { status: 500 });
+  }
+
+  if (env.PROCESSED) {
+    await env.PROCESSED.put(paymentId, "1", { expirationTtl: 60 * 60 * 24 * 30 });
+  }
+  return new Response("OK", { status: 200 });
+}
+
+// Add/update the buyer in Brevo and (optionally) drop them in the buyers list.
+async function brevoUpsertContact(env, email, name) {
+  if (!env.BREVO_API) throw new Error("BREVO_API not set");
+  const payload = { email, updateEnabled: true };
+  if (name) payload.attributes = { FIRSTNAME: name };
+  if (env.BREVO_BUYER_LIST_ID) payload.listIds = [parseInt(env.BREVO_BUYER_LIST_ID, 10)];
+
+  const r = await fetch("https://api.brevo.com/v3/contacts", {
+    method: "POST",
+    headers: { "api-key": env.BREVO_API, "Content-Type": "application/json", accept: "application/json" },
+    body: JSON.stringify(payload),
+  });
+  // 201 created / 204 updated = fine. Ignore "already exists" races.
+  if (!r.ok && r.status !== 204) {
+    const t = await r.text();
+    if (!t.includes("duplicate_parameter")) throw new Error("Brevo contact error: " + t);
+  }
+}
+
+// Send the product-delivery email (the Notion course link) via Brevo transactional API.
+async function brevoSendDeliveryEmail(env, email, name) {
+  if (!env.BREVO_API) throw new Error("BREVO_API not set");
+  const courseUrl = env.NOTION_COURSE_URL;
+  if (!courseUrl) throw new Error("NOTION_COURSE_URL not set");
+
+  const senderEmail = env.SENDER_EMAIL || "operators.playbook2020s@gmail.com";
+  const senderName = env.SENDER_NAME || "Operator's Playbook";
+  const hi = name ? `Hi ${name},` : "Hi,";
+
+  const html =
+    `<div style="font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.6;color:#1a1a1a;max-width:560px">` +
+    `<p>${hi}</p>` +
+    `<p>Thanks for picking up the <strong>Meta Ads Playbook (Beginner)</strong>. Here's your copy:</p>` +
+    `<p style="margin:26px 0">` +
+    `<a href="${courseUrl}" style="background:#E8893A;color:#1a1206;text-decoration:none;font-weight:bold;padding:13px 24px;border-radius:8px;display:inline-block">Open the playbook in Notion →</a>` +
+    `</p>` +
+    `<p>Click <strong>Duplicate</strong> (top-right in Notion) and it's yours to keep, edit, and mark up. Start with Chapter 0, then actually do the task at the end of each chapter inside your own ad account — that's the whole point of a read-and-do playbook.</p>` +
+    `<p>Trouble opening it? Just reply to this email, or write to <a href="mailto:operators.playbook2020s@gmail.com">operators.playbook2020s@gmail.com</a>.</p>` +
+    `<p>— Mayank<br>Operator's Playbook</p>` +
+    `</div>`;
+
+  const r = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: { "api-key": env.BREVO_API, "Content-Type": "application/json", accept: "application/json" },
+    body: JSON.stringify({
+      sender: { name: senderName, email: senderEmail },
+      to: [{ email, name: name || email }],
+      subject: "Your Meta Ads Playbook (Beginner) — access inside",
+      htmlContent: html,
+    }),
+  });
+  if (!r.ok) {
+    const t = await r.text();
+    throw new Error("Brevo email error: " + t);
+  }
 }
 
 // ---------- helpers ----------
