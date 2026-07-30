@@ -42,6 +42,13 @@
             });
             var result = await v.json();
             if (v.ok && result.verified) {
+              // Hand the verified payment to thank-you.html so Purchase fires exactly
+              // once, with the payment id as its event id (survives a refresh, and
+              // lets a future CAPI send dedupe against this browser event).
+              try {
+                sessionStorage.setItem("opb_purchase_id", resp.razorpay_payment_id || "");
+                sessionStorage.setItem("opb_purchase_amt", String((order.amount || 0) / 100));
+              } catch (e) {}
               window.location.href = "/thank-you.html";
             } else {
               alert(
@@ -71,6 +78,14 @@
         var desc = r && r.error && r.error.description ? r.error.description : "Please try again.";
         alert("Payment failed: " + desc);
       });
+
+      // Meta: fires as the payment modal opens — the top of the buying step.
+      if (window.opbTrack)
+        window.opbTrack("InitiateCheckout", {
+          value: (order.amount || 0) / 100,
+          currency: order.currency || "INR",
+          content_name: "Meta Ads Playbook (Beginner)",
+        });
 
       rzp.open();
       reset(); // restore the button label now that the modal is up

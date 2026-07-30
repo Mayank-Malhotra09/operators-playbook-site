@@ -85,7 +85,12 @@
       });
       var d = await r.json();
       if (r.ok && d.ok) {
-        window.location.href = CH1_URL;
+        // Meta: the opt-in is the conversion cold ads optimize for.
+        if (window.opbTrack) window.opbTrack("Lead", { content_name: "Free Chapter 1" });
+        // Small pause so the pixel request leaves before we navigate to Notion.
+        setTimeout(function () {
+          window.location.href = CH1_URL;
+        }, 350);
       } else {
         errEl.textContent = d.error || "Something went wrong. Please try again.";
         btn.textContent = "Send me Chapter 1 →";

@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+<script src="/pixel.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Payment received — Operator's Playbook</title>
 <meta name="robots" content="noindex" />
@@ -49,5 +50,30 @@
     <p class="muted">Keep your payment confirmation handy in case you need support.</p>
     <a class="home" href="/">← Back to the playbook</a>
   </div>
+<script>
+  // Meta Purchase. Fires only when checkout.js handed us a verified payment in this
+  // session, so a refresh or a direct visit to this page never counts as a sale.
+  (function () {
+    var id = "", amt = "";
+    try {
+      id = sessionStorage.getItem("opb_purchase_id") || "";
+      amt = sessionStorage.getItem("opb_purchase_amt") || "";
+      sessionStorage.removeItem("opb_purchase_id");
+      sessionStorage.removeItem("opb_purchase_amt");
+    } catch (e) {}
+    if (!id) return;
+    if (window.opbTrack)
+      window.opbTrack(
+        "Purchase",
+        {
+          value: Number(amt) || 999,
+          currency: "INR",
+          content_name: "Meta Ads Playbook (Beginner)",
+          content_type: "product",
+        },
+        id
+      );
+  })();
+</script>
 </body>
 </html>
