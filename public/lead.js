@@ -33,7 +33,7 @@
       '<button class="x" aria-label="Close">&times;</button>' +
       "<h3>Read Chapter 1, free</h3>" +
       '<p>Pop in your email and we\'ll open Chapter 1 — "How Meta actually works" — and send you a copy. No spam; unsubscribe anytime.</p>' +
-      '<input type="text" id="opb-lead-name" placeholder="First name (optional)" autocomplete="given-name">' +
+      '<input type="text" id="opb-lead-name" placeholder="First name" autocomplete="given-name" required>' +
       '<input type="email" id="opb-lead-email" placeholder="you@email.com" autocomplete="email" required>' +
       '<div class="err" id="opb-lead-err"></div>' +
       '<button class="go" id="opb-lead-go">Send me Chapter 1 &rarr;</button>' +
@@ -45,6 +45,10 @@
       if (e.target === modal || e.target.classList.contains("x")) close();
     });
     modal.querySelector("#opb-lead-go").addEventListener("click", submit);
+    // Enter moves name -> email, and submits from email.
+    modal.querySelector("#opb-lead-name").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") modal.querySelector("#opb-lead-email").focus();
+    });
     modal.querySelector("#opb-lead-email").addEventListener("keydown", function (e) {
       if (e.key === "Enter") submit();
     });
@@ -54,7 +58,7 @@
     if (!modal) build();
     modal.classList.add("on");
     setTimeout(function () {
-      var el = modal.querySelector("#opb-lead-email");
+      var el = modal.querySelector("#opb-lead-name");
       if (el) el.focus();
     }, 50);
   }
@@ -67,10 +71,17 @@
     var nameEl = modal.querySelector("#opb-lead-name");
     var errEl = modal.querySelector("#opb-lead-err");
     var btn = modal.querySelector("#opb-lead-go");
+    var name = (nameEl.value || "").trim();
     var email = (emailEl.value || "").trim();
 
+    if (name.length < 2) {
+      errEl.textContent = "Please enter your first name.";
+      nameEl.focus();
+      return;
+    }
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
       errEl.textContent = "Please enter a valid email.";
+      emailEl.focus();
       return;
     }
     errEl.textContent = "";
@@ -81,7 +92,7 @@
       var r = await fetch("/api/lead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email, name: (nameEl.value || "").trim() }),
+        body: JSON.stringify({ email: email, name: name }),
       });
       var d = await r.json();
       if (r.ok && d.ok) {
