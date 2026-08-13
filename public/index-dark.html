@@ -223,9 +223,9 @@
     <h1>Learn Meta Ads by actually running them — not by watching someone else.</h1>
     <p class="sub">A read-and-do playbook that takes you from zero to a live, properly-structured campaign on your own ad account. No fluff, no goldmine promises, no 6-hour videos you'll forget by Tuesday.</p>
     <div class="btn-row">
-      <!-- TODO: replace href with your Razorpay payment link before launch -->
+      <!-- Deliberately scrolls to the offer rather than opening checkout: nobody should
+           hit a payment modal before they've seen the price. Do NOT wire data-buy here. -->
       <a class="btn" href="#offer">Get the playbook — ₹999</a>
-      <!-- TODO: replace href with your free Chapter 1 link (Notion / email-capture) -->
       <a class="link-arrow" href="#free" data-lead>Or read Chapter 1 free →</a>
     </div>
     <p class="trustline">A read-and-do playbook · 11 chapters · delivered to your inbox</p>
@@ -415,16 +415,18 @@
 </div>
 
 <script>
-  /* Reveal the sticky mobile CTA only after the hero scrolls out of view,
-     so it doesn't duplicate the in-hero button at the top of the page. */
+  /* Reveal the sticky buy bar only once the reader reaches the OFFER section.
+     Cold ad traffic is promised a free chapter, not a checkout — a ₹999 bar
+     following someone who hasn't seen the price yet is pressure, and it competes
+     with the free-Chapter-1 opt-in that the Leads campaign optimises for.
+     Once they've reached the price, a persistent buy button is useful. */
   (function () {
     var bar = document.querySelector('.sticky-cta');
-    var hero = document.querySelector('.hero');
-    if (!bar || !hero) return;
+    var offer = document.getElementById('offer');
+    if (!bar || !offer) return;
     function onScroll() {
-      var threshold = hero.offsetHeight - 80;
-      if (window.scrollY > threshold) bar.classList.add('visible');
-      else bar.classList.remove('visible');
+      var reached = offer.getBoundingClientRect().top <= window.innerHeight * 0.6;
+      bar.classList.toggle('visible', reached);
     }
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll, { passive: true });
