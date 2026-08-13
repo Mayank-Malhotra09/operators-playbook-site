@@ -133,13 +133,23 @@ async function handleWebhook(request, env) {
   }
 
   const payment = body && body.payload && body.payload.payment && body.payload.payment.entity;
-  if (!payment || !payment.email) {
-    return new Response("No payment email; nothing to deliver", { status: 200 });
+  if (!payment) {
+    return new Response("No payment entity; nothing to deliver", { status: 200 });
   }
 
-  const email = payment.email;
+  const notes = payment.notes || {};
   const paymentId = payment.id;
-  const name = (payment.notes && payment.notes.name) || "";
+  const name = notes.name || "";
+
+  // Razorpay's mobile flow can complete on phone number alone and then report the
+  // payment email as the placeholder void@razorpay.com. Delivery is an emailed link,
+  // so prefer the address the buyer typed on our own form (checkout.js → notes.email).
+  const email = firstDeliverableEmail(notes.email, payment.email);
+  if (!email) {
+    // A real, paid-for sale we cannot fulfil. Shout about it rather than 200-ing quietly.
+    await alertUndeliverable(env, paymentId, payment).catch(() => {});
+    return new Response("No deliverable email; alerted support", { status: 200 });
+  }
 
   // Idempotency (optional): if a KV namespace named PROCESSED is bound, skip duplicates.
   if (env.PROCESSED) {
@@ -177,6 +187,44 @@ async function brevoUpsertContact(env, email, name) {
     const t = await r.text();
     if (!t.includes("duplicate_parameter")) throw new Error("Brevo contact error: " + t);
   }
+}
+
+// Razorpay substitutes placeholder addresses when it doesn't collect a real one.
+// Anything on this list is a black hole: mailing it bounces and pollutes the Buyers list.
+const PLACEHOLDER_EMAILS = ["void@razorpay.com", "voidforward@razorpay.com"];
+
+function firstDeliverableEmail(...candidates) {
+  for (const c of candidates) {
+    const e = (c || "").trim().toLowerCase();
+    if (!e) continue;
+    if (PLACEHOLDER_EMAILS.includes(e)) continue;
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) continue;
+    return e;
+  }
+  return "";
+}
+
+// A payment captured with no usable email is money taken for an undelivered product.
+// Mail the operator so it can be fixed by hand within minutes.
+async function alertUndeliverable(env, paymentId, payment) {
+  if (!env.BREVO_API) return;
+  const to = env.REPLY_TO || "operators.playbook2020s@gmail.com";
+  await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: { "api-key": env.BREVO_API, "Content-Type": "application/json", accept: "application/json" },
+    body: JSON.stringify({
+      sender: { name: "Operator's Playbook", email: env.SENDER_EMAIL || "hello@operatorsplaybook.com" },
+      to: [{ email: to }],
+      subject: `⚠️ Paid order with no email — ${paymentId}`,
+      htmlContent:
+        `<p>A payment was captured but carried no deliverable email address, so the playbook was NOT sent.</p>` +
+        `<p><strong>Payment id:</strong> ${paymentId}<br>` +
+        `<strong>Contact:</strong> ${payment.contact || "(none)"}<br>` +
+        `<strong>Razorpay email:</strong> ${payment.email || "(none)"}<br>` +
+        `<strong>Amount:</strong> ₹${(payment.amount || 0) / 100}</p>` +
+        `<p>Find them in the Razorpay dashboard and deliver manually.</p>`,
+    }),
+  });
 }
 
 // Send the product-delivery email (the Notion course link) via Brevo transactional API.
