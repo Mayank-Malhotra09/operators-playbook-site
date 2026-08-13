@@ -415,18 +415,20 @@
 </div>
 
 <script>
-  /* Reveal the sticky buy bar only once the reader reaches the OFFER section.
-     Cold ad traffic is promised a free chapter, not a checkout — a ₹999 bar
-     following someone who hasn't seen the price yet is pressure, and it competes
-     with the free-Chapter-1 opt-in that the Leads campaign optimises for.
-     Once they've reached the price, a persistent buy button is useful. */
+  /* The sticky buy bar shadows the offer section's own buy button: it appears only
+     once that button has scrolled off the top of the screen, and hides again if you
+     scroll back to it. Two identical ₹999 buttons on screen at once looks broken.
+     It also means cold ad traffic — promised a free chapter, not a checkout — never
+     sees a payment CTA following them before they've reached the price. */
   (function () {
     var bar = document.querySelector('.sticky-cta');
-    var offer = document.getElementById('offer');
-    if (!bar || !offer) return;
+    var inlineBtn = document.querySelector('#offer [data-buy]');
+    if (!bar || !inlineBtn) return;
     function onScroll() {
-      var reached = offer.getBoundingClientRect().top <= window.innerHeight * 0.6;
-      bar.classList.toggle('visible', reached);
+      // bottom < 0 → the in-section button has passed above the viewport.
+      // Before the offer it sits below the fold, so this is false there too.
+      var passed = inlineBtn.getBoundingClientRect().bottom < 0;
+      bar.classList.toggle('visible', passed);
     }
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll, { passive: true });
