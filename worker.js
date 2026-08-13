@@ -182,8 +182,11 @@ async function brevoSendDeliveryEmail(env, email, name) {
   const courseUrl = env.NOTION_COURSE_URL;
   if (!courseUrl) throw new Error("NOTION_COURSE_URL not set");
 
-  const senderEmail = env.SENDER_EMAIL || "operators.playbook2020s@gmail.com";
+  // From must be on an authenticated domain (Brevo → Senders/Domains), or Gmail files it as spam.
+  // Replies go somewhere a human reads — hello@ is send-only unless a forwarder is set up.
+  const senderEmail = env.SENDER_EMAIL || "hello@operatorsplaybook.com";
   const senderName = env.SENDER_NAME || "Operator's Playbook";
+  const replyTo = env.REPLY_TO || "operators.playbook2020s@gmail.com";
   const hi = name ? `Hi ${name},` : "Hi,";
 
   const html =
@@ -194,7 +197,7 @@ async function brevoSendDeliveryEmail(env, email, name) {
     `<a href="${courseUrl}" style="background:#E8893A;color:#1a1206;text-decoration:none;font-weight:bold;padding:13px 24px;border-radius:8px;display:inline-block">Open the playbook in Notion →</a>` +
     `</p>` +
     `<p>Click <strong>Duplicate</strong> (top-right in Notion) and it's yours to keep, edit, and mark up. Start with Chapter 0, then actually do the task at the end of each chapter inside your own ad account — that's the whole point of a read-and-do playbook.</p>` +
-    `<p>Trouble opening it? Just reply to this email, or write to <a href="mailto:operators.playbook2020s@gmail.com">operators.playbook2020s@gmail.com</a>.</p>` +
+    `<p>Trouble opening it? Just reply to this email, or write to <a href="mailto:${replyTo}">${replyTo}</a>.</p>` +
     `<p>— Mayank<br>Operator's Playbook</p>` +
     `</div>`;
 
@@ -203,6 +206,7 @@ async function brevoSendDeliveryEmail(env, email, name) {
     headers: { "api-key": env.BREVO_API, "Content-Type": "application/json", accept: "application/json" },
     body: JSON.stringify({
       sender: { name: senderName, email: senderEmail },
+      replyTo: { email: replyTo, name: senderName },
       to: [{ email, name: name || email }],
       subject: "Your Meta Ads Playbook (Beginner) — access inside",
       htmlContent: html,
