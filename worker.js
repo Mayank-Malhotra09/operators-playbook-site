@@ -3,7 +3,10 @@
 // - Handles the Razorpay payment API routes itself.
 // Secrets come from the Worker's env vars (dashboard → Variables and secrets), never from code.
 
-const PRICE_PAISE = 99900; // ₹999 launch price — server-authoritative. Flip to 169900 for ₹1,699.
+// ⚠️ TEMPORARY — ₹5 for a live end-to-end delivery-email test (2026-08-13).
+// REVERT TO 99900 as soon as the test purchase is verified. The sales pages still
+// display ₹999, so any real visitor buying right now is charged ₹5.
+const PRICE_PAISE = 500; // TEMP ₹5 · normal launch price 99900 (₹999) · 169900 (₹1,699) from 31 Aug
 const CURRENCY = "INR";
 
 export default {
