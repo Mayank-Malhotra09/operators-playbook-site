@@ -3,7 +3,7 @@
 // - Handles the Razorpay payment API routes itself.
 // Secrets come from the Worker's env vars (dashboard → Variables and secrets), never from code.
 
-const PRICE_PAISE = 99900; // ₹999 launch price — server-authoritative. Flip to 169900 for ₹1,699 on 31 Aug.
+const PRICE_PAISE = 99900; // ₹999 launch price — server-authoritative. Flip to 169900 for ₹1,699 on 15 Sep.
 const CURRENCY = "INR";
 
 export default {
