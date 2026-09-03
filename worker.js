@@ -267,8 +267,9 @@ async function brevoSendDeliveryEmail(env, email, name) {
 }
 
 // ---------- POST /api/lead ----------
-// Free Chapter 1 opt-in. Adds the email to the Brevo "Leads" list (env.BREVO_LEADS_LIST_ID),
-// which triggers the nurture automation in Brevo. The frontend then opens Chapter 1 immediately.
+// Free Chapter 1 opt-in AND abandoned-checkout capture (body.source === "checkout").
+// Adds the email to the Brevo "Leads" list (env.BREVO_LEADS_LIST_ID), which triggers the
+// nurture automation in Brevo. For the opt-in, the frontend then opens Chapter 1 immediately.
 async function handleLead(request, env) {
   const headers = { "Content-Type": "application/json" };
   if (!env.BREVO_API) return json({ error: "Email service not configured." }, 500, headers);
@@ -282,23 +283,53 @@ async function handleLead(request, env) {
 
   const email = ((data && data.email) || "").trim();
   const name = ((data && data.name) || "").trim();
+  // source: "checkout" = the buy-modal fired this (abandoned-checkout capture, see checkout.js).
+  // Anything else = the free Chapter 1 opt-in.
+  const fromCheckout = data && data.source === "checkout";
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
     return json({ error: "Please enter a valid email." }, 400, headers);
   }
 
   try {
-    const payload = { email, updateEnabled: true };
-    if (name) payload.attributes = { FIRSTNAME: name };
-    if (env.BREVO_LEADS_LIST_ID) payload.listIds = [parseInt(env.BREVO_LEADS_LIST_ID, 10)];
+    const attributes = {};
+    if (name) attributes.FIRSTNAME = name;
+    if (fromCheckout) {
+      // Both attributes must exist in Brevo (Contacts -> Settings -> Contact attributes):
+      //   CHECKOUT_STARTED  boolean     CHECKOUT_AT  date
+      // A Brevo automation on CHECKOUT_STARTED = true (wait 12h, skip if in Buyers list)
+      // is the abandoned-checkout email. If the attributes don't exist yet, Brevo rejects the
+      // whole upsert — so we retry without them rather than lose the lead.
+      attributes.CHECKOUT_STARTED = true;
+      attributes.CHECKOUT_AT = new Date().toISOString().slice(0, 10);
+    }
+    const listIds = env.BREVO_LEADS_LIST_ID ? [parseInt(env.BREVO_LEADS_LIST_ID, 10)] : undefined;
 
-    const r = await fetch("https://api.brevo.com/v3/contacts", {
-      method: "POST",
-      headers: { "api-key": env.BREVO_API, "Content-Type": "application/json", accept: "application/json" },
-      body: JSON.stringify(payload),
-    });
+    const upsert = (attrs) =>
+      fetch("https://api.brevo.com/v3/contacts", {
+        method: "POST",
+        headers: { "api-key": env.BREVO_API, "Content-Type": "application/json", accept: "application/json" },
+        body: JSON.stringify({
+          email,
+          updateEnabled: true,
+          ...(Object.keys(attrs).length ? { attributes: attrs } : {}),
+          ...(listIds ? { listIds } : {}),
+        }),
+      });
+
+    let r = await upsert(attributes);
     if (!r.ok && r.status !== 204) {
       const t = await r.text();
-      if (!t.includes("duplicate_parameter")) return json({ error: "Could not sign you up. Please try again." }, 500, headers);
+      if (fromCheckout && !t.includes("duplicate_parameter")) {
+        // Most likely the CHECKOUT_* attributes haven't been created in Brevo yet. Keep the lead.
+        const fallback = name ? { FIRSTNAME: name } : {};
+        r = await upsert(fallback);
+        if (!r.ok && r.status !== 204) {
+          const t2 = await r.text();
+          if (!t2.includes("duplicate_parameter")) return json({ error: "Could not sign you up. Please try again." }, 500, headers);
+        }
+      } else if (!t.includes("duplicate_parameter")) {
+        return json({ error: "Could not sign you up. Please try again." }, 500, headers);
+      }
     }
   } catch (e) {
     return json({ error: "Could not sign you up. Please try again." }, 500, headers);

@@ -117,6 +117,20 @@
     var go = modal.querySelector("#opb-buy-go");
     go.textContent = "Loading…";
     go.disabled = true;
+
+    // Abandoned-checkout capture. Anyone who gets this far has typed their email to BUY —
+    // the hottest lead the site produces. Register them before Razorpay opens so a drop-off
+    // still lands in Brevo (Leads list + CHECKOUT_STARTED flag) and can be followed up.
+    // Fire-and-forget: this must never delay or block the payment modal.
+    try {
+      fetch("/api/lead", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email, name: name, source: "checkout" }),
+        keepalive: true,
+      }).catch(function () {});
+    } catch (e) {}
+
     startCheckout(name, email);
   }
 
