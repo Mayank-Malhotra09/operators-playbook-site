@@ -22,6 +22,9 @@ export default {
     if (url.pathname === "/api/lead" && request.method === "POST") {
       return handleLead(request, env);
     }
+    if (url.pathname === "/api/health") {
+      return health(env);
+    }
 
     // Everything else: serve the static site.
     return env.ASSETS.fetch(request);
@@ -336,6 +339,53 @@ async function handleLead(request, env) {
   }
 
   return json({ ok: true }, 200, headers);
+}
+
+// ---------- GET /api/health ----------
+// Exists because of the 3-5 Sep 2026 outage: the Brevo API key was rotated, the Worker
+// secret was not, and /api/lead returned 500 for two days. Ads kept spending, every
+// Chapter 1 download silently failed, and two buyers were lost before anyone noticed.
+//
+// It deliberately does NOT post to /api/lead: a synthetic signup would create a real
+// Brevo contact and trigger the nurture on every check. Instead it calls Brevo's
+// read-only /v3/account with the SAME secret /api/lead uses, so an expired key, a
+// revoked key, or an IP allowlist that starts rejecting the Worker all surface here.
+//
+// Returns 200 when healthy and 503 when not, so any uptime checker can watch it.
+// Body is coarse on purpose — status codes only, never key material or account data.
+let HEALTH_CACHE = null; // { at, body, status } — throttles the upstream call per isolate.
+
+async function health(env) {
+  const headers = { "Content-Type": "application/json", "Cache-Control": "no-store" };
+  const now = Date.now();
+  if (HEALTH_CACHE && now - HEALTH_CACHE.at < 60000) {
+    return json({ ...HEALTH_CACHE.body, cached: true }, HEALTH_CACHE.status, headers);
+  }
+
+  const checks = { brevo: "unknown", razorpay_key: "unknown", price_paise: PRICE_PAISE };
+
+  if (!env.BREVO_API) {
+    checks.brevo = "missing_secret";
+  } else {
+    try {
+      const r = await fetch("https://api.brevo.com/v3/account", {
+        headers: { "api-key": env.BREVO_API, accept: "application/json" },
+      });
+      // 401 is the exact signature of the September outage (rotated key / IP block).
+      checks.brevo = r.ok ? "ok" : String(r.status);
+    } catch (e) {
+      checks.brevo = "unreachable";
+    }
+  }
+
+  // Cheap config assertion — catches a half-configured deploy without calling Razorpay.
+  checks.razorpay_key = env.RAZORPAY_KEY_ID && env.RAZORPAY_KEY_SECRET ? "ok" : "missing_secret";
+
+  const ok = checks.brevo === "ok" && checks.razorpay_key === "ok";
+  const body = { ok, checks, ts: new Date().toISOString() };
+  const status = ok ? 200 : 503;
+  HEALTH_CACHE = { at: now, body, status };
+  return json(body, status, headers);
 }
 
 // ---------- helpers ----------
