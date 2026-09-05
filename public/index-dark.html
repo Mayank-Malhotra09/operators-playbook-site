@@ -414,16 +414,40 @@
      once that button has scrolled off the top of the screen, and hides again if you
      scroll back to it. Two identical ₹999 buttons on screen at once looks broken.
      It also means cold ad traffic — promised a free chapter, not a checkout — never
-     sees a payment CTA following them before they've reached the price. */
+     sees a payment CTA following them before they've reached the price.
+
+     ?buy=1 changes WHEN the bar appears, never the two-buttons rule.
+     The Sales campaigns (2026-09 | Sales | ColdDirect / Retarget) link here with
+     ?buy=1. Their ads already say "₹999 until 15 September" and their button says
+     Shop now, so those people arrived intending to pay — making them hunt for the
+     offer section costs sales. With ?buy=1 the bar is up from the first screen.
+     Campaign 1's free-chapter ads use the plain URL and behave exactly as before.
+     Either way the bar hides whenever the offer's own button is actually on screen,
+     so the two ₹999 buttons are never visible together. */
   (function () {
     var bar = document.querySelector('.sticky-cta');
+    if (!bar) return;
+
+    var buyIntent = false;
+    try {
+      buyIntent = new URLSearchParams(window.location.search).get('buy') === '1';
+    } catch (e) {}
+
     var inlineBtn = document.querySelector('#offer [data-buy]');
-    if (!bar || !inlineBtn) return;
+    if (!inlineBtn) {
+      // No offer button to clash with; nothing to gate against.
+      if (buyIntent) bar.classList.add('visible');
+      return;
+    }
+
     function onScroll() {
-      // bottom < 0 → the in-section button has passed above the viewport.
-      // Before the offer it sits below the fold, so this is false there too.
-      var passed = inlineBtn.getBoundingClientRect().bottom < 0;
-      bar.classList.toggle('visible', passed);
+      var r = inlineBtn.getBoundingClientRect();
+      var show = buyIntent
+        // Buy-intent: show everywhere EXCEPT while the offer's own button is on screen.
+        ? (r.bottom < 0 || r.top > window.innerHeight)
+        // Default: only once the offer's button has passed above the viewport.
+        : r.bottom < 0;
+      bar.classList.toggle('visible', show);
     }
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll, { passive: true });
