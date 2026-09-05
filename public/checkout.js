@@ -137,6 +137,8 @@
   async function startCheckout(name, email) {
     var btn = pendingBtn;
     var label = btn ? btn.textContent : "";
+    // Set by rzp.on("payment.failed"), consumed by modal.ondismiss — see below.
+    var lastFailure = null;
     var reset = function () {
       if (btn) {
         btn.textContent = label;
@@ -201,13 +203,36 @@
         modal: {
           ondismiss: function () {
             reset();
+            // Razorpay runs its own retry screen while its modal is open, so we do not
+            // interrupt it. We step in only once the customer has closed it after a
+            // failure — otherwise they land back on the page with no way to try again.
+            if (lastFailure) {
+              var msg = lastFailure;
+              lastFailure = null;
+              openModal(btn);
+              var errEl = modal && modal.querySelector("#opb-buy-err");
+              if (errEl) errEl.textContent = msg;
+              var goBtn = modal && modal.querySelector("#opb-buy-go");
+              if (goBtn) {
+                goBtn.textContent = "Try payment again →";
+                goBtn.disabled = false;
+              }
+            }
           },
         },
       });
 
       rzp.on("payment.failed", function (r) {
-        var desc = r && r.error && r.error.description ? r.error.description : "Please try again.";
-        alert("Payment failed: " + desc);
+        var err = (r && r.error) || {};
+        // A buyer cannot act on "BAD_REQUEST_ERROR". Translate the causes we actually
+        // see into plain language; fall back to Razorpay's own description.
+        var why = err.description || "The payment didn't go through.";
+        if (err.reason === "payment_timed_out") why = "The payment timed out before your bank confirmed it.";
+        else if (err.reason === "insufficient_funds") why = "Your bank reported insufficient balance.";
+        lastFailure =
+          why +
+          " Nothing has been charged — if your bank shows a debit it is reversed automatically. " +
+          "You can try again, or use a different method.";
       });
 
       // Meta: fires as the payment modal opens — the top of the buying step.
