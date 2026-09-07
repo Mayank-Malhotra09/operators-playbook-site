@@ -95,7 +95,9 @@
     var emailEl = modal.querySelector("#opb-buy-email");
     var errEl = modal.querySelector("#opb-buy-err");
     var name = (nameEl.value || "").trim();
-    var email = (emailEl.value || "").trim();
+    // Lowercased at the source: Brevo would otherwise treat two casings of the
+    // same address as two contacts, and Meta hashes the exact string it is given.
+    var email = (emailEl.value || "").trim().toLowerCase();
 
     if (name.length < 2) {
       errEl.textContent = "Please enter your first name.";
@@ -113,6 +115,10 @@
       localStorage.setItem("opb_email", email);
       localStorage.setItem("opb_name", name);
     } catch (e) {}
+
+    // Identify before InitiateCheckout fires so the buying signal Meta optimises
+    // against carries matching data rather than arriving anonymous.
+    if (window.opbIdentify) window.opbIdentify(email, name);
 
     var go = modal.querySelector("#opb-buy-go");
     go.textContent = "Loading…";

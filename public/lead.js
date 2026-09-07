@@ -72,7 +72,9 @@
     var errEl = modal.querySelector("#opb-lead-err");
     var btn = modal.querySelector("#opb-lead-go");
     var name = (nameEl.value || "").trim();
-    var email = (emailEl.value || "").trim();
+    // Lowercased at the source: Brevo would otherwise treat two casings of the
+    // same address as two contacts, and Meta hashes the exact string it is given.
+    var email = (emailEl.value || "").trim().toLowerCase();
 
     if (name.length < 2) {
       errEl.textContent = "Please enter your first name.";
@@ -96,6 +98,16 @@
       });
       var d = await r.json();
       if (r.ok && d.ok) {
+        // Remember them so checkout can prefill instead of asking twice, and so
+        // every later event carries Advanced Matching. checkout.js reads these keys.
+        try {
+          localStorage.setItem("opb_email", email);
+          localStorage.setItem("opb_name", name);
+        } catch (err) {}
+
+        // Identify BEFORE the Lead event so the event itself carries matching data.
+        if (window.opbIdentify) window.opbIdentify(email, name);
+
         // Meta: the opt-in is the conversion cold ads optimize for.
         if (window.opbTrack) window.opbTrack("Lead", { content_name: "Free Chapter 1" });
         // Small pause so the pixel request leaves before we navigate to Notion.
