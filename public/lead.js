@@ -33,8 +33,8 @@
       '<button class="x" aria-label="Close">&times;</button>' +
       "<h3>Read Chapter 1, free</h3>" +
       '<p>Pop in your email and we\'ll open Chapter 1 — "How Meta actually works" — and send you a copy. No spam; unsubscribe anytime.</p>' +
-      '<input type="text" id="opb-lead-name" placeholder="First name" autocomplete="given-name" required>' +
-      '<input type="email" id="opb-lead-email" placeholder="you@email.com" autocomplete="email" required>' +
+      '<input type="text" id="opb-lead-name" placeholder="First name" autocomplete="given-name" data-clarity-mask="true" required>' +
+      '<input type="email" id="opb-lead-email" placeholder="you@email.com" autocomplete="email" data-clarity-mask="true" required>' +
       '<div class="err" id="opb-lead-err"></div>' +
       '<button class="go" id="opb-lead-go">Send me Chapter 1 &rarr;</button>' +
       '<div class="fine">Free chapter · the full 11-chapter playbook is &#8377;999</div>' +

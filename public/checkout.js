@@ -39,8 +39,8 @@
       '<button class="x" aria-label="Close">&times;</button>' +
       "<h3>Where should we send it?</h3>" +
       "<p>Your Notion access link goes to this address the moment payment clears. Double-check it &mdash; it's the only copy.</p>" +
-      '<input type="text" id="opb-buy-name" placeholder="First name" autocomplete="given-name" required>' +
-      '<input type="email" id="opb-buy-email" placeholder="you@email.com" autocomplete="email" inputmode="email" required>' +
+      '<input type="text" id="opb-buy-name" placeholder="First name" autocomplete="given-name" data-clarity-mask="true" required>' +
+      '<input type="email" id="opb-buy-email" placeholder="you@email.com" autocomplete="email" inputmode="email" data-clarity-mask="true" required>' +
       '<div class="err" id="opb-buy-err"></div>' +
       '<button class="go" id="opb-buy-go">Continue to payment &rarr;</button>' +
       '<div class="fine">Secure payment via Razorpay</div>' +
