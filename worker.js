@@ -305,7 +305,21 @@ async function handleLead(request, env) {
       attributes.CHECKOUT_STARTED = true;
       attributes.CHECKOUT_AT = new Date().toISOString().slice(0, 10);
     }
-    const listIds = env.BREVO_LEADS_LIST_ID ? [parseInt(env.BREVO_LEADS_LIST_ID, 10)] : undefined;
+    // Everyone lands in Leads. Checkout-starters ALSO join a dedicated list, and that
+    // list join is what the abandoned-checkout automation triggers on.
+    //
+    // WHY A LIST AND NOT THE CHECKOUT_STARTED ATTRIBUTE: this Brevo plan has no
+    // "contact attribute updated" trigger — the Contacts triggers are list-based only.
+    // A list join also fires for a brand-new contact and a returning lead alike,
+    // whereas an attribute written during contact CREATION never "changes" and so
+    // would silently never fire for anyone who goes straight to buy.
+    // The attribute is still written: it drives segmentation and reporting.
+    const lists = [];
+    if (env.BREVO_LEADS_LIST_ID) lists.push(parseInt(env.BREVO_LEADS_LIST_ID, 10));
+    if (fromCheckout && env.BREVO_CHECKOUT_LIST_ID) {
+      lists.push(parseInt(env.BREVO_CHECKOUT_LIST_ID, 10));
+    }
+    const listIds = lists.length ? lists : undefined;
 
     const upsert = (attrs) =>
       fetch("https://api.brevo.com/v3/contacts", {
