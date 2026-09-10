@@ -273,6 +273,42 @@ async function brevoSendDeliveryEmail(env, email, name) {
 // Free Chapter 1 opt-in AND abandoned-checkout capture (body.source === "checkout").
 // Adds the email to the Brevo "Leads" list (env.BREVO_LEADS_LIST_ID), which triggers the
 // nurture automation in Brevo. For the opt-in, the frontend then opens Chapter 1 immediately.
+// Email validation. The old check was /^[^@\s]+@[^@\s]+\.[^@\s]+$/, which accepted
+// "gulfanali7881@gmail.comkk" — a real signup that reached the Leads list and would
+// have hard-bounced. Bounces cost sender reputation, and email is the channel that
+// actually produced the first sale, so it is worth protecting.
+//
+// Two additions over a structural check:
+//   1. A typo guard on the big providers. "gmail.comkk", "gmail.con", "yahoo.co"
+//      are unambiguously mistakes; any other domain is left alone so we never
+//      reject a legitimate rare TLD.
+//   2. A short disposable-domain list.
+const BIG_PROVIDERS = new Set([
+  "gmail.com", "googlemail.com", "yahoo.com", "yahoo.in", "yahoo.co.in",
+  "hotmail.com", "hotmail.co.uk", "outlook.com", "live.com", "icloud.com",
+  "me.com", "rediffmail.com", "protonmail.com", "proton.me",
+]);
+const BIG_STEMS = new Set([
+  "gmail", "googlemail", "yahoo", "hotmail", "outlook", "live",
+  "icloud", "rediffmail", "protonmail",
+]);
+const DISPOSABLE = [
+  "mailinator", "tempmail", "temp-mail", "10minutemail", "guerrillamail",
+  "yopmail", "trashmail", "sharklasers", "dispostable", "getnada",
+  "maildrop", "throwaway", "crybio.com",
+];
+
+function validEmail(raw) {
+  const e = String(raw || "").trim().toLowerCase();
+  // Structure: one @, a dotted domain, and an alphabetic TLD of 2-24 chars.
+  if (!/^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)*\.[A-Za-z]{2,24}$/.test(e)) return false;
+  const domain = e.slice(e.lastIndexOf("@") + 1);
+  if (DISPOSABLE.some((d) => domain.includes(d))) return false;
+  const stem = domain.slice(0, domain.indexOf("."));
+  if (BIG_STEMS.has(stem) && !BIG_PROVIDERS.has(domain)) return false;
+  return true;
+}
+
 async function handleLead(request, env) {
   const headers = { "Content-Type": "application/json" };
   if (!env.BREVO_API) return json({ error: "Email service not configured." }, 500, headers);
@@ -289,7 +325,7 @@ async function handleLead(request, env) {
   // source: "checkout" = the buy-modal fired this (abandoned-checkout capture, see checkout.js).
   // Anything else = the free Chapter 1 opt-in.
   const fromCheckout = data && data.source === "checkout";
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+  if (!validEmail(email)) {
     return json({ error: "Please enter a valid email." }, 400, headers);
   }
 
