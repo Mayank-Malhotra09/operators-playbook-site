@@ -127,8 +127,11 @@ async function handleWebhook(request, env) {
     return new Response("Bad JSON", { status: 400 });
   }
 
-  // Only fulfil on a successful payment.
-  if (body.event !== "payment.captured" && body.event !== "order.paid") {
+  // Fulfil on payment.captured only. Razorpay also sends order.paid for the same
+  // payment (site checkout and Payment Links both create an order), and with no
+  // PROCESSED KV bound there is no idempotency guard, so handling both events sent
+  // every buyer two identical delivery emails.
+  if (body.event !== "payment.captured") {
     return new Response("Ignored event", { status: 200 });
   }
 
